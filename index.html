@@ -142,6 +142,13 @@ section{padding-block:26px}
   border-radius:9px;padding:11px 14px;margin-top:14px;font-size:13.7px;line-height:1.55}
 .plain b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--accent);display:block;margin-bottom:4px}
+.ilabs{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:8px;padding:10px 14px 12px;margin-top:2px}
+.ilabs-h{font-size:12.5px;color:var(--muted);margin-bottom:7px}
+.ilabs-h a{color:var(--accent);font-family:var(--mono);font-size:12px;text-decoration:none;white-space:nowrap}
+.ilabs-h a:hover{text-decoration:underline}
+.ilabs ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:3px}
+.ilabs li{font-size:13.3px;color:var(--fg);line-height:1.5}
 .labs-ext{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
 .labs-ext a{font-family:var(--mono);font-size:12.5px;text-decoration:none;border:1px solid var(--line);
   border-radius:7px;padding:6px 10px;color:var(--accent);background:var(--surface)}
@@ -707,6 +714,30 @@ const SIMPLE={
  19:"Renting a unit in someone else's giant building. The landlord secures the building; you must still lock your own unit. Most cloud breaches are simply people leaving their unit door wide open (misconfiguration).",
  20:"The locks and seals themselves. Symmetric = one shared key, fast, for bulk data. Asymmetric = a public padlock anyone can click shut, but only your private key opens it. Hashing = a tamper-evident seal that proves nothing was changed.",
 };
+// Official CEH v13 iLabs exercises per module (public course-outline lab titles — references only,
+// NOT course content). Log in at learn.eccouncil.org and run these inside the EC-Council Cyber Range.
+// Module 01 has no lab.
+const ILABS={
+ 2:["Footprinting through search engines & web services","Footprinting through social networking sites","Website & email footprinting","Whois, DNS & network footprinting","Footprinting with Recon-ng, Maltego, FOCA & OSINT tools"],
+ 3:["Host discovery (Nmap, Angry IP Scanner)","Port, service & OS discovery (Nmap, hping3)","Scanning beyond IDS / firewall","Network scanning with NetScanTools / Metasploit","Draw network diagrams"],
+ 4:["NetBIOS enumeration","SNMP enumeration","LDAP enumeration","NFS & SMTP enumeration","DNS enumeration (zone transfer)","Enumeration with Enum4linux & Nmap scripts"],
+ 5:["Vulnerability research (CVE / NVD / Exploit-DB)","Vulnerability scanning with OpenVAS / Nessus","Vulnerability scanning with Nikto","Analyse & interpret scan reports"],
+ 6:["Crack passwords (John the Ripper, Hashcat, Responder)","Escalate privileges","Maintain access & execute applications","Hide files (NTFS streams, steganography)","Clear logs & cover tracks"],
+ 7:["Create a trojan / RAT (MSFvenom, njRAT)","Create a virus & worm","Static malware analysis (strings, PEiD, Dependency Walker)","Dynamic malware analysis (Process Monitor, TCPView)","Detect & defend against malware"],
+ 8:["MAC flooding (macof)","DHCP starvation (Yersinia)","ARP poisoning (Ettercap, arpspoof)","Spoofing & man-in-the-middle","Sniff credentials with Wireshark","Detect sniffing / ARP poisoning"],
+ 9:["Social engineering with the Social-Engineer Toolkit (SET)","Clone a site & harvest credentials","Detect phishing (Netcraft, PhishTank)","Audit the organisation against social engineering"],
+ 10:["SYN flood (Metasploit, hping3)","DoS / DDoS with HOIC, LOIC, Raven-storm","Detect & protect against DoS / DDoS"],
+ 11:["Session hijacking with bettercap / ZAP","Intercept & tamper with session traffic (Burp)","Detect session hijacking"],
+ 12:["Detect intrusions with Snort","Evade firewalls (tunnelling & techniques)","Evade IDS / firewall with Nmap","Detect honeypots"],
+ 13:["Footprint & banner-grab a web server","Enumerate web-server info (Nmap scripts, uniscan)","Crack web-server credentials (Hydra)","Web-server attacks with various tools"],
+ 14:["Fingerprint & enumerate a web app (WhatWeb, Wappalyzer)","Web spidering & directory brute-force (Burp, gobuster)","XSS, CSRF & parameter tampering","Exploit WordPress with WPScan","Scan for web-app flaws (OWASP ZAP, Vega)"],
+ 15:["Error-based SQL injection","Blind / time-based SQL injection","Automate SQLi with sqlmap","Detect SQLi (Snort, scanners)"],
+ 16:["Wireless packet analysis (Wireshark)","Crack WEP (Aircrack-ng)","Crack WPA / WPA2 handshake (Aircrack-ng)","Create a rogue AP / evil twin"],
+ 17:["Hack Android with a binary payload (MSFvenom + Metasploit)","Harvest mobile credentials via phishing","Static analysis of a malicious APK (MobSF)","Secure & scan an Android device"],
+ 18:["Footprint IoT devices (Shodan, Censys)","Capture & analyse IoT traffic (Wireshark)","OT / SCADA footprinting & analysis"],
+ 19:["Enumerate S3 buckets (S3Scanner, lazys3)","Exploit a misconfigured S3 bucket","AWS IAM privilege escalation (Pacu)","Container / Docker security scanning"],
+ 20:["Encrypt & hash with crypto tools (HashCalc, CryptoForge)","Create & use self-signed certificates","Disk encryption (VeraCrypt / BitLocker)","Cryptanalysis with CrypTool","Hash & email encryption analysis"],
+};
 const $=s=>document.querySelector(s);
 let state={};
 try{state=JSON.parse(localStorage.getItem("ceh-progress-v1"))||{}}catch(e){state={}}
@@ -744,6 +775,7 @@ PHASES.forEach((ph,i)=>{
         <div class="tools">${m.tools.map(t=>`<span>${t}</span>`).join("")}</div>
         <h4>Lab to run</h4>
         <div class="lab">${m.lab}</div>
+        ${ILABS[m.n]?`<h4>CEH iLabs for this module</h4><div class="ilabs"><div class="ilabs-h">Run these inside your EC-Council Cyber Range — <a href="https://learn.eccouncil.org/" target="_blank" rel="noopener">log in to iLabs ↗</a></div><ol>${ILABS[m.n].map(l=>`<li>${l}</li>`).join("")}</ol></div>`:""}
         ${LINKS[m.n]?`<h4>Free practice labs</h4><div class="labs-ext">${LINKS[m.n].map(l=>`<a href="${l.u}" target="_blank" rel="noopener">${l.t} ↗</a>`).join("")}</div>`:""}
         <h4>Exam focus</h4>
         <ul><li>${m.tips}</li></ul>
