@@ -1,0 +1,832 @@
+<title>CEH Field Manual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a training "dossier" — sticky ops bar with live progress, a 12-week
+   roadmap, then modules grouped into 4 phases. Type system is IBM Plex
+   (condensed display / sans body / mono for data). Teal = primary + "done",
+   red reserved for the exam stamp. */
+:root{
+  --bg:#f4f5f2; --surface:#ffffff; --surface-2:#eef0ec;
+  --fg:#191c1f; --muted:#5b636b; --line:#dde0db;
+  --accent:#0c7f7a; --accent-ink:#ffffff;
+  --done:#107a5e; --prog:#b2740a; --todo:#9aa2a9;
+  --stamp:#b23a2e;
+  --shadow:0 1px 2px rgba(20,30,28,.06),0 6px 20px rgba(20,30,28,.05);
+  --r:12px;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1014; --surface:#161b21; --surface-2:#1d242c;
+  --fg:#e7eaed; --muted:#99a1aa; --line:#272f38;
+  --accent:#2dd4bf; --accent-ink:#06211e;
+  --done:#36c08c; --prog:#e3ad42; --todo:#6b7580;
+  --stamp:#f0776b;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1014; --surface:#161b21; --surface-2:#1d242c;
+  --fg:#e7eaed; --muted:#99a1aa; --line:#272f38;
+  --accent:#2dd4bf; --accent-ink:#06211e;
+  --done:#36c08c; --prog:#e3ad42; --todo:#6b7580;
+  --stamp:#f0776b;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.55;
+  -webkit-font-smoothing:antialiased;font-size:15px}
+.wrap{max-width:1040px;margin:0 auto;
+  padding-left:max(18px,env(safe-area-inset-left,0px));
+  padding-right:max(18px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--cond);font-weight:700;line-height:1.08;text-wrap:balance;margin:0}
+a{color:var(--accent)}
+.mono{font-family:var(--mono)}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* sticky ops bar */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
+  background:var(--surface);z-index:30}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);
+  border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;margin-right:auto;min-width:0}
+.brand .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.brand .t{font-family:var(--cond);font-size:19px;font-weight:700;letter-spacing:.01em}
+.pwrap{display:flex;align-items:center;gap:10px;min-width:150px}
+.pbar{flex:1;height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;min-width:90px}
+.pfill{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .35s ease}
+.pct{font-family:var(--mono);font-size:13px;font-weight:600;min-width:38px;text-align:right}
+.btn{font-family:var(--mono);font-size:12.5px;font-weight:600;text-decoration:none;cursor:pointer;
+  border:1px solid var(--line);background:var(--surface);color:var(--fg);
+  padding:7px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.prime{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.prime:hover{filter:brightness(1.05)}
+
+/* hero */
+.hero{padding-block:40px 20px}
+.hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.hero h1{font-size:clamp(34px,7vw,58px);letter-spacing:-.01em}
+.hero p{max-width:60ch;color:var(--muted);font-size:17px;margin:16px 0 0}
+.hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.chip{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:99px;padding:5px 11px;color:var(--muted)}
+.chip b{color:var(--fg);font-weight:600}
+
+section{padding-block:26px}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.sec-h .n{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600}
+.sec-h h2{font-size:23px}
+
+/* how-to + setup */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow)}
+.panel h3{font-size:16px;margin-bottom:8px}
+.panel ul{margin:0;padding-left:18px;color:var(--muted)}
+.panel li{margin:5px 0}
+.panel li b{color:var(--fg);font-weight:600}
+.setup li{list-style:none;position:relative;padding-left:4px;display:flex;gap:9px;align-items:flex-start}
+.setup ul{padding-left:0}
+.setup .tool{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.ph{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.ph .wk{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.05em}
+.ph h3{font-size:15px;margin:6px 0 9px}
+.ph .mods{display:flex;flex-direction:column;gap:5px}
+.ph .mods span{font-size:12.5px;color:var(--muted);display:flex;gap:7px;align-items:baseline}
+.ph .mods .d{color:var(--accent);font-family:var(--mono);font-size:11px}
+.ph.exam{border-color:color-mix(in srgb,var(--stamp) 45%,var(--line))}
+.ph.exam .wk{color:var(--stamp)}
+
+/* phase heading in module list */
+.phase-band{margin-top:30px;display:flex;align-items:center;gap:12px}
+.phase-band .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-ink);background:var(--accent);padding:4px 10px;border-radius:6px;font-weight:600}
+.phase-band h3{font-size:18px}
+.phase-band .wks{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:auto}
+
+/* module card */
+.mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  margin-top:12px;box-shadow:var(--shadow);overflow:hidden}
+.mod>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:14px 16px}
+.mod>summary::-webkit-details-marker{display:none}
+.mod .idx{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--muted);
+  background:var(--surface-2);border-radius:7px;padding:5px 8px;min-width:40px;text-align:center}
+.mod .ti{flex:1;min-width:0}
+.mod .ti .mt{display:block;font-family:var(--cond);font-weight:700;font-size:17px;line-height:1.15}
+.mod .ti .ms{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.mod .caret{color:var(--muted);transition:transform .2s;flex-shrink:0}
+.mod[open] .caret{transform:rotate(90deg)}
+.state{display:flex;gap:6px;flex-shrink:0}
+.pip{width:9px;height:9px;border-radius:99px;background:var(--todo)}
+.pip.on{background:var(--done)}
+.mod .body{padding:4px 16px 18px;border-top:1px solid var(--line)}
+.mod .body h4{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);margin:16px 0 7px;font-weight:600}
+.mod .lead{color:var(--fg);margin:12px 0 0}
+.mod .body ul{margin:0;padding-left:18px;color:var(--muted)}
+.mod .body li{margin:5px 0}
+.mod .body li b{color:var(--fg);font-weight:600}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+.tools span{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:6px;padding:3px 8px}
+.lab{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:8px;padding:11px 13px;color:var(--muted);font-size:13.5px;margin-top:4px}
+.lab b{color:var(--fg)}
+.plain{background:color-mix(in srgb,var(--accent) 9%,var(--surface));
+  border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));
+  border-radius:9px;padding:11px 14px;margin-top:14px;font-size:13.7px;line-height:1.55}
+.plain b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);display:block;margin-bottom:4px}
+.labs-ext{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.labs-ext a{font-family:var(--mono);font-size:12.5px;text-decoration:none;border:1px solid var(--line);
+  border-radius:7px;padding:6px 10px;color:var(--accent);background:var(--surface)}
+.labs-ext a:hover{border-color:var(--accent);background:var(--surface-2)}
+.toggles{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+.tg{display:flex;align-items:center;gap:9px;cursor:pointer;font-family:var(--mono);font-size:13px;
+  border:1px solid var(--line);border-radius:8px;padding:8px 13px;user-select:none;background:var(--surface)}
+.tg input{position:absolute;opacity:0;width:0;height:0}
+.tg .box{width:18px;height:18px;border-radius:5px;border:2px solid var(--todo);display:grid;place-items:center;flex-shrink:0}
+.tg .box svg{width:12px;height:12px;opacity:0;stroke:var(--accent-ink)}
+.tg.on{border-color:var(--done);color:var(--fg)}
+.tg.on .box{background:var(--done);border-color:var(--done)}
+.tg.on .box svg{opacity:1}
+.tg:hover{border-color:var(--accent)}
+
+/* exam panel */
+.exam-card{background:var(--surface);border:1px solid color-mix(in srgb,var(--stamp) 35%,var(--line));
+  border-radius:var(--r);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stamp{position:absolute;top:14px;right:-38px;transform:rotate(14deg);background:var(--stamp);color:#fff;
+  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.14em;padding:5px 46px}
+.exam-card h3{font-size:19px;margin-bottom:6px}
+.exam-card .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+.exam-card ul{margin:0;padding-left:18px;color:var(--muted)}
+.exam-card li{margin:5px 0}
+
+/* cheat-sheets */
+.cheat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cheat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+.cheat h3{font-size:15px;margin-bottom:2px}
+.cheat .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:11px}
+.cline{margin:9px 0}
+.cline code{display:block;font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:7px;padding:7px 9px;overflow-x:auto;white-space:pre;color:var(--fg)}
+.cline span{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+
+/* port table */
+.ports-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.ports{width:100%;border-collapse:collapse;font-size:13px;min-width:460px}
+.ports th,.ports td{text-align:left;padding:8px 14px;border-bottom:1px solid var(--line)}
+.ports tr:last-child td{border-bottom:0}
+.ports th{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ports td:first-child{font-family:var(--mono);color:var(--accent);white-space:nowrap;font-weight:600}
+.ports td:nth-child(2){font-family:var(--mono);font-size:12px}
+
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:12px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 18px;box-shadow:var(--shadow)}
+.q .qn{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--accent);margin-bottom:7px}
+.q p{margin:0 0 12px;font-weight:600}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{text-align:left;font-size:13.5px;border:1px solid var(--line);background:var(--surface);color:var(--fg);
+  border-radius:8px;padding:9px 12px;cursor:pointer;font-family:inherit}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.correct{border-color:var(--done);background:color-mix(in srgb,var(--done) 15%,var(--surface));font-weight:600}
+.opt.wrong{border-color:var(--stamp);background:color-mix(in srgb,var(--stamp) 13%,var(--surface))}
+.opt:disabled{cursor:default}
+.why{margin-top:11px;font-size:12.5px;color:var(--muted);border-left:3px solid var(--accent);padding-left:11px;display:none}
+.why.show{display:block}
+.why b{color:var(--fg)}
+
+footer{padding:34px 0 48px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);margin-top:30px}
+footer .mono{font-size:11.5px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;
+  background:var(--fg);color:var(--bg);font-family:var(--mono);font-size:12.5px;padding:9px 15px;border-radius:9px;
+  transition:all .25s;pointer-events:none;z-index:40}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:760px){
+  .cols,.exam-card .grid{grid-template-columns:1fr}
+  .road{grid-template-columns:1fr 1fr}
+  .brand .t{font-size:17px}
+}
+@media (max-width:440px){ .road{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="bar">
+  <div class="wrap bar-in">
+    <div class="brand">
+      <span class="k">CEH v13 · Practical Track</span>
+      <span class="t">Field Manual</span>
+    </div>
+    <div class="pwrap">
+      <div class="pbar"><div class="pfill" id="pfill"></div></div>
+      <span class="pct tnum" id="pct">0%</span>
+    </div>
+    <a class="btn prime" href="https://learn.eccouncil.org/" target="_blank" rel="noopener">▶ Launch iLabs</a>
+    <button class="btn" id="theme">◐ Theme</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Certified Ethical Hacker · 12-week plan</div>
+    <h1>Pass CEH in 3 months, labs and all.</h1>
+    <p>Your own study console for the 20 CEH modules: short, plain-English notes on every
+    concept, which lab to run for each, and a week-by-week route. Tick off theory and
+    labs as you go — your progress is saved on this device.</p>
+    <div class="meta">
+      <span class="chip"><b>20</b> modules</span>
+      <span class="chip"><b>4</b> phases</span>
+      <span class="chip"><b>12</b> weeks</span>
+      <span class="chip"><b id="cnt">0 / 40</b> tasks done</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-h"><span class="n">00</span><h2>How to use this &amp; set up your lab</h2></div>
+    <div class="cols">
+      <div class="panel">
+        <h3>The weekly rhythm</h3>
+        <ul>
+          <li><b>Watch</b> the module video from your EC-Council course first for the full detail.</li>
+          <li><b>Read</b> the notes here to lock the concept in simple words and spot what's exam-critical.</li>
+          <li><b>Do the lab</b> — tick <span class="tool">Labs</span> only after you've run the tools yourself.</li>
+          <li><b>Review</b> weekly: re-read every note you've marked done. Repetition is what passes CEH.</li>
+          <li>Keep a <b>cheat-sheet</b> of every command you run. You'll reuse it in the exam and on the job.</li>
+        </ul>
+      </div>
+      <div class="panel setup">
+        <h3>Build your practice lab (Week 1)</h3>
+        <ul>
+          <li>🖥️ <span><b>Virtualization:</b> VirtualBox or VMware (free Workstation Player).</span></li>
+          <li>🗡️ <span><b>Attacker VM:</b> <span class="tool">Kali Linux</span> or <span class="tool">Parrot OS</span>.</span></li>
+          <li>🎯 <span><b>Targets:</b> <span class="tool">Metasploitable 2/3</span>, <span class="tool">OWASP Juice Shop</span>, a Windows eval VM.</span></li>
+          <li>🌐 <span><b>Isolate it:</b> put all VMs on a Host-Only / Internal network so nothing leaks out.</span></li>
+          <li>☁️ <span><b>Or skip setup:</b> the EC-Council <b>iLabs</b> are pre-built — use the Launch button up top.</span></li>
+          <li>⚖️ <span><b>Only attack machines you own or iLabs.</b> Scanning others is illegal.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">01</span><h2>12-week roadmap</h2></div>
+    <div class="road" id="road"></div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">02</span><h2>Modules &amp; labs</h2></div>
+    <div id="modules"></div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">03</span><h2>Command cheat-sheets</h2></div>
+    <p style="color:var(--muted);margin:-6px 0 16px;max-width:64ch">The exact syntax you'll run in the labs and recognize in exam screenshots. Replace <code class="mono">&lt;ip&gt;</code> and wordlist paths with your own. Run these only against your lab or iLabs.</p>
+    <div class="cheat-grid">
+      <div class="cheat">
+        <h3>Nmap</h3><div class="sub">Scanning & recon</div>
+        <div class="cline"><code>nmap -sS -sV -O &lt;ip&gt;</code><span>Stealth SYN scan + service versions + OS guess</span></div>
+        <div class="cline"><code>nmap -p- &lt;ip&gt;</code><span>All 65,535 TCP ports</span></div>
+        <div class="cline"><code>nmap -sU --top-ports 50 &lt;ip&gt;</code><span>Top 50 UDP ports</span></div>
+        <div class="cline"><code>nmap -A -T4 &lt;ip&gt;</code><span>Aggressive: scripts, version, OS, traceroute</span></div>
+        <div class="cline"><code>nmap -Pn &lt;ip&gt;</code><span>Skip host discovery (treat host as up)</span></div>
+        <div class="cline"><code>nmap -f -D RND:5 -T1 &lt;ip&gt;</code><span>Evasion: fragment + decoys + slow</span></div>
+      </div>
+      <div class="cheat">
+        <h3>Enumeration</h3><div class="sub">SMB · SNMP · DNS</div>
+        <div class="cline"><code>enum4linux -a &lt;ip&gt;</code><span>Full SMB/NetBIOS enumeration</span></div>
+        <div class="cline"><code>smbclient -L //&lt;ip&gt; -N</code><span>List shares using a null session</span></div>
+        <div class="cline"><code>snmpwalk -v2c -c public &lt;ip&gt;</code><span>Walk SNMP with the default community</span></div>
+        <div class="cline"><code>dig axfr @&lt;ns&gt; target.com</code><span>Attempt a DNS zone transfer</span></div>
+        <div class="cline"><code>nbtstat -A &lt;ip&gt;</code><span>NetBIOS name table (Windows)</span></div>
+      </div>
+      <div class="cheat">
+        <h3>Password cracking</h3><div class="sub">Online &amp; offline</div>
+        <div class="cline"><code>hydra -l admin -P rockyou.txt ssh://&lt;ip&gt;</code><span>Online brute-force of SSH login</span></div>
+        <div class="cline"><code>john --wordlist=rockyou.txt hashes.txt</code><span>Offline dictionary crack</span></div>
+        <div class="cline"><code>hashcat -m 1000 -a 0 hash.txt rockyou.txt</code><span>Crack NTLM (-m 0 = MD5)</span></div>
+        <div class="cline"><code>hashid '&lt;hash&gt;'</code><span>Identify the hash type first</span></div>
+        <div class="cline"><code># Hydra = online · John/Hashcat = offline</code><span>Classic exam distinction</span></div>
+      </div>
+      <div class="cheat">
+        <h3>Metasploit</h3><div class="sub">Exploit &amp; post-exploit</div>
+        <div class="cline"><code>msfconsole</code><span>Launch the framework</span></div>
+        <div class="cline"><code>search &lt;service/cve&gt;</code><span>Find a matching module</span></div>
+        <div class="cline"><code>use &lt;module&gt; ; set RHOSTS &lt;ip&gt; ; run</code><span>Configure and fire</span></div>
+        <div class="cline"><code>sessions -i 1</code><span>Enter a Meterpreter session (getuid, hashdump)</span></div>
+        <div class="cline"><code>msfvenom -p &lt;payload&gt; LHOST=&lt;ip&gt; -f exe -o s.exe</code><span>Build a standalone payload</span></div>
+      </div>
+      <div class="cheat">
+        <h3>Web &amp; SQL injection</h3><div class="sub">App testing</div>
+        <div class="cline"><code>sqlmap -u "http://site/p?id=1" --dbs</code><span>Detect SQLi and list databases</span></div>
+        <div class="cline"><code>sqlmap -u "..." -D shop --tables --dump</code><span>Pull tables, then dump rows</span></div>
+        <div class="cline"><code>' OR '1'='1' -- -</code><span>Classic authentication-bypass payload</span></div>
+        <div class="cline"><code>nikto -h http://&lt;ip&gt;</code><span>Web server vuln scan</span></div>
+        <div class="cline"><code>gobuster dir -u http://&lt;ip&gt; -w list.txt</code><span>Brute-force hidden directories</span></div>
+      </div>
+      <div class="cheat">
+        <h3>Sniffing</h3><div class="sub">Capture &amp; MITM</div>
+        <div class="cline"><code>tcpdump -i eth0 -w cap.pcap</code><span>Capture traffic to a file</span></div>
+        <div class="cline"><code>http.request || tcp.port==80</code><span>Wireshark display filters</span></div>
+        <div class="cline"><code>ip.addr==&lt;ip&gt; &amp;&amp; tcp.flags.syn==1</code><span>Filter one host's SYN packets</span></div>
+        <div class="cline"><code>ettercap -T -M arp /&lt;gw&gt;// /&lt;victim&gt;//</code><span>ARP-poison man-in-the-middle</span></div>
+      </div>
+      <div class="cheat">
+        <h3>Wireless</h3><div class="sub">WPA2 capture &amp; crack</div>
+        <div class="cline"><code>airmon-ng start wlan0</code><span>Put adapter into monitor mode</span></div>
+        <div class="cline"><code>airodump-ng wlan0mon</code><span>Find networks and their BSSID/channel</span></div>
+        <div class="cline"><code>aireplay-ng --deauth 5 -a &lt;bssid&gt; wlan0mon</code><span>Force a client to re-handshake</span></div>
+        <div class="cline"><code>aircrack-ng -w rockyou.txt cap-01.cap</code><span>Crack the captured handshake</span></div>
+      </div>
+      <div class="cheat">
+        <h3>Cryptography</h3><div class="sub">OpenSSL</div>
+        <div class="cline"><code>openssl dgst -sha256 file</code><span>Hash a file (integrity check)</span></div>
+        <div class="cline"><code>openssl enc -aes-256-cbc -in f -out f.enc</code><span>Symmetric encrypt with AES-256</span></div>
+        <div class="cline"><code>openssl genrsa -out key.pem 2048</code><span>Generate an RSA private key</span></div>
+        <div class="cline"><code>openssl rsa -in key.pem -pubout -out pub.pem</code><span>Derive the public key</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">04</span><h2>Port &amp; protocol reference</h2></div>
+    <p style="color:var(--muted);margin:-6px 0 16px;max-width:64ch">Memorize these — "which port / which service" is one of the most common exam question types.</p>
+    <div class="ports-wrap">
+      <table class="ports">
+        <thead><tr><th>Port</th><th>Proto</th><th>Service</th><th>Notes for the exam</th></tr></thead>
+        <tbody>
+          <tr><td>20/21</td><td>TCP</td><td>FTP</td><td>Cleartext; 21 = control, 20 = data</td></tr>
+          <tr><td>22</td><td>TCP</td><td>SSH</td><td>Encrypted remote shell / SCP / SFTP</td></tr>
+          <tr><td>23</td><td>TCP</td><td>Telnet</td><td>Cleartext remote login — sniffable</td></tr>
+          <tr><td>25</td><td>TCP</td><td>SMTP</td><td>Mail sending; user enumeration (VRFY)</td></tr>
+          <tr><td>53</td><td>TCP/UDP</td><td>DNS</td><td>TCP for zone transfers (AXFR)</td></tr>
+          <tr><td>67/68</td><td>UDP</td><td>DHCP</td><td>Target of DHCP starvation</td></tr>
+          <tr><td>80</td><td>TCP</td><td>HTTP</td><td>Cleartext web</td></tr>
+          <tr><td>110</td><td>TCP</td><td>POP3</td><td>Mail retrieval (cleartext)</td></tr>
+          <tr><td>135</td><td>TCP</td><td>MSRPC</td><td>Windows RPC endpoint mapper</td></tr>
+          <tr><td>137–139</td><td>TCP/UDP</td><td>NetBIOS</td><td>Legacy Windows naming / sessions</td></tr>
+          <tr><td>143</td><td>TCP</td><td>IMAP</td><td>Mail retrieval (cleartext)</td></tr>
+          <tr><td>161/162</td><td>UDP</td><td>SNMP</td><td>Default community "public" leaks data</td></tr>
+          <tr><td>389</td><td>TCP</td><td>LDAP</td><td>Directory services (636 = LDAPS)</td></tr>
+          <tr><td>443</td><td>TCP</td><td>HTTPS</td><td>TLS-encrypted web</td></tr>
+          <tr><td>445</td><td>TCP</td><td>SMB</td><td>Windows file sharing — big attack surface</td></tr>
+          <tr><td>1433</td><td>TCP</td><td>MS-SQL</td><td>Microsoft SQL Server</td></tr>
+          <tr><td>3306</td><td>TCP</td><td>MySQL</td><td>Common SQLi back-end</td></tr>
+          <tr><td>3389</td><td>TCP</td><td>RDP</td><td>Windows remote desktop — brute-force target</td></tr>
+          <tr><td>5900</td><td>TCP</td><td>VNC</td><td>Remote desktop; weak auth history</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">05</span><h2>Practice questions</h2></div>
+    <p style="color:var(--muted);margin:-6px 0 16px;max-width:64ch">Scenario-style questions in the CEH format. Pick an answer to reveal the correct one and why. Original questions for self-testing.</p>
+    <div class="quiz" id="quiz"></div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">06</span><h2>Exam readiness</h2></div>
+    <div class="exam-card">
+      <div class="stamp">EXAM</div>
+      <h3>CEH (ANSI) at a glance</h3>
+      <p style="color:var(--muted);margin:0;max-width:62ch">The multiple-choice exam is 125 questions in 4 hours. The passing score isn't fixed — it shifts with question difficulty (roughly 60–85%). Questions are scenario-based: you pick the <i>best next step</i>, the right tool, or read a tool's output.</p>
+      <div class="grid">
+        <div>
+          <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 7px">Score big on these</h4>
+          <ul>
+            <li>The 5 hacking phases — in order, every time.</li>
+            <li>Which <b>tool</b> does what (Nmap flags, Hydra, sqlmap, Aircrack-ng, Wireshark).</li>
+            <li>Reading <b>Nmap &amp; packet output</b> in a screenshot.</li>
+            <li>Scan types &amp; TCP flags (SYN, ACK, FIN, NULL, Xmas).</li>
+            <li>Crypto: symmetric vs asymmetric, hashing, PKI.</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 7px">Prep in Week 12</h4>
+          <ul>
+            <li>Take <b>timed practice tests</b> until you clear ~80% consistently.</li>
+            <li>Redo every lab you marked unsure.</li>
+            <li>Memorize port numbers &amp; common CVEs.</li>
+            <li>Consider the practical <b>CEH (Practical)</b> exam after — 6 hours, real challenges.</li>
+            <li>Sleep. A rested brain beats one more cram session.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>About this manual.</b> These are original study notes and lab pointers written to accompany
+    the official CEH v13 course you purchased — not a copy of its videos or lab text. Watch the
+    course for full detail; use this to review, track progress, and know which lab to run.</p>
+    <p class="mono" style="margin-top:10px">Progress saved locally in this browser · <span id="reset" style="color:var(--accent);cursor:pointer">reset progress</span></p>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PHASES=[
+  {tag:"Phase 1",name:"Foundations & Information Gathering",wks:"Weeks 1–3"},
+  {tag:"Phase 2",name:"Gaining & Maintaining Access",wks:"Weeks 4–7"},
+  {tag:"Phase 3",name:"Network, Web & Perimeter",wks:"Weeks 8–10"},
+  {tag:"Phase 4",name:"Mobile, Cloud, Crypto & Exam",wks:"Weeks 11–12"},
+];
+const M=[
+ {n:1,p:0,wk:"Wk 1",t:"Introduction to Ethical Hacking",s:"The rules, the mindset, the method.",
+  lead:"Before touching a tool, you learn the frame: what you're protecting, who the attackers are, and the ordered method every hacker (good or bad) follows.",
+  concepts:["<b>CIA triad</b> — security is about Confidentiality, Integrity, Availability. Every attack breaks one of these.",
+   "<b>Attacker types</b> — black / white / grey hat, plus hacktivists, insiders, state actors, script kiddies.",
+   "<b>5 phases of hacking</b> — Reconnaissance → Scanning → Gaining Access → Maintaining Access → Clearing Tracks. Memorize this order.",
+   "<b>Cyber Kill Chain</b> and MITRE ATT&CK describe how an intrusion unfolds step by step.",
+   "<b>Ethical hacking vs pentest</b> — you need written authorization (scope + rules of engagement). No permission = a crime."],
+  tools:["MITRE ATT&CK","Cyber Kill Chain"],
+  lab:"<b>No tools yet.</b> Set up your lab VMs (see Week-1 setup above) and write your own one-line definition of each of the 5 phases from memory.",
+  tips:"Expect several 'which phase / what order' questions. This module alone is worth easy exam points."},
+
+ {n:2,p:0,wk:"Wk 2",t:"Footprinting & Reconnaissance",s:"Learn everything without touching the target.",
+  lead:"Recon is quietly collecting intel — domains, emails, employees, tech stack — using public sources so the target never notices.",
+  concepts:["<b>Passive vs active</b> — passive = public data (no packets to target); active = you probe and risk being logged.",
+   "<b>OSINT</b> — open-source intelligence: WHOIS, DNS records, Google dorks, LinkedIn, job posts, GitHub leaks.",
+   "<b>Google dorking</b> — search operators (<span class='mono'>site:</span>, <span class='mono'>filetype:</span>, <span class='mono'>intitle:</span>) to find exposed files and pages.",
+   "<b>DNS & WHOIS</b> reveal subdomains, mail servers, registrant info and IP ranges.",
+   "Goal: build a <b>map of the attack surface</b> before you send a single scan."],
+  tools:["Maltego","theHarvester","Recon-ng","Shodan","whois","nslookup"],
+  lab:"<b>iLabs – Footprinting.</b> Run <span class='mono'>theHarvester</span> and <span class='mono'>whois</span> against a domain you own; try 3 Google dorks; pull DNS records with <span class='mono'>nslookup</span>/<span class='mono'>dig</span>.",
+  tips:"Know which tool is passive vs active, and what WHOIS vs DNS each reveal."},
+
+ {n:3,p:0,wk:"Wk 2",t:"Scanning Networks",s:"Find live hosts, open ports and services.",
+  lead:"Now you touch the network: discover which hosts are alive, which ports are open, what service and OS sits behind each.",
+  concepts:["<b>TCP 3-way handshake</b> (SYN → SYN/ACK → ACK) — every scan type plays with these flags.",
+   "<b>Scan types</b> — SYN/'stealth' (half-open), full-connect, UDP, and the flag scans NULL / FIN / Xmas.",
+   "<b>Port states</b> — open, closed, filtered (a firewall is dropping the probe).",
+   "<b>Banner grabbing & OS fingerprinting</b> identify the exact service version — your lead to known vulnerabilities.",
+   "Output = a <b>network map</b>: hosts, ports, services, versions."],
+  tools:["Nmap","Zenmap","hping3","Masscan"],
+  lab:"<b>iLabs – Scanning.</b> On Metasploitable run <span class='mono'>nmap -sS -sV -O &lt;ip&gt;</span>. Compare <span class='mono'>-sS</span> vs <span class='mono'>-sT</span> vs <span class='mono'>-sU</span>. Learn to read the port/service/version columns.",
+  tips:"Nmap flags are the single most-tested tool. Drill them: -sS -sT -sU -sV -O -p -A -Pn."},
+
+ {n:4,p:0,wk:"Wk 3",t:"Enumeration",s:"Pull names, shares, users and groups from services.",
+  lead:"Enumeration is actively querying services to extract usable detail — usernames, network shares, group memberships — that feed the actual attack.",
+  concepts:["<b>What you extract</b> — user accounts, shares, machine names, routing/SNMP info, email addresses.",
+   "<b>By protocol</b> — NetBIOS (137–139), SMB (445), SNMP (161), LDAP (389), SMTP (25), NFS (2049), DNS zone transfer.",
+   "<b>SNMP</b> with a default 'public' community string leaks huge amounts of device info.",
+   "<b>DNS zone transfer</b> (AXFR) can dump every record if a server is misconfigured.",
+   "This is still pre-exploit — you're deepening the map, not breaking in yet."],
+  tools:["enum4linux","snmpwalk","ldapsearch","smbclient","nbtstat"],
+  lab:"<b>iLabs – Enumeration.</b> Run <span class='mono'>enum4linux</span> and <span class='mono'>smbclient</span> against Metasploitable; try <span class='mono'>snmpwalk</span> with community <span class='mono'>public</span>.",
+  tips:"Match each port number to its enumeration target — a classic exam pattern."},
+
+ {n:5,p:0,wk:"Wk 3",t:"Vulnerability Analysis",s:"Find and rank the weaknesses.",
+  lead:"You turn your map into a prioritized list of weaknesses, scored by how bad they are so you fix (or exploit) the worst first.",
+  concepts:["<b>Vulnerability vs exploit vs threat</b> — the hole, the tool that uses it, and who'd use it.",
+   "<b>CVE</b> = a catalogued vulnerability ID; <b>CVSS</b> = its 0–10 severity score.",
+   "<b>Scanner types</b> — network, host-based, web-app, and authenticated vs unauthenticated scans.",
+   "<b>False positives</b> are real — scanners over-report, so you verify findings manually.",
+   "Output = a ranked report that drives the next phase."],
+  tools:["Nessus","OpenVAS","Qualys","Nikto"],
+  lab:"<b>iLabs – Vulnerability Analysis.</b> Scan Metasploitable with <span class='mono'>OpenVAS</span>/<span class='mono'>Nessus</span>; pick one High finding and look up its CVE + CVSS.",
+  tips:"Know the CVSS severity bands and the difference between a scan and an exploit."},
+
+ {n:6,p:1,wk:"Wk 4",t:"System Hacking",s:"The actual break-in: crack, escalate, hide, cover.",
+  lead:"The core attack module. Using what you found, you get in, become admin, run your payload, hide it, then erase your trail — the 5 phases made concrete.",
+  concepts:["<b>Password attacks</b> — dictionary, brute-force, and rainbow tables (precomputed hashes). Salting defeats rainbow tables.",
+   "<b>Privilege escalation</b> — go from normal user to admin/root via misconfigs or exploits.",
+   "<b>Maintaining access</b> — backdoors, and payloads like Metasploit's Meterpreter.",
+   "<b>Hiding files</b> — steganography and NTFS Alternate Data Streams.",
+   "<b>Covering tracks</b> — clearing event logs and command history."],
+  tools:["John the Ripper","Hashcat","Hydra","Mimikatz","Metasploit"],
+  lab:"<b>iLabs – System Hacking.</b> Crack a hash with <span class='mono'>John</span>/<span class='mono'>Hashcat</span>; exploit Metasploitable with <span class='mono'>Metasploit</span> and open a Meterpreter session; clear a log.",
+  tips:"The heaviest module. Know each tool's job and the escalation → maintain → cover order."},
+
+ {n:7,p:1,wk:"Wk 5",t:"Malware Threats",s:"Trojans, worms, ransomware, rootkits — and analysis.",
+  lead:"What malicious code looks like, how each type spreads, and how analysts safely take it apart.",
+  concepts:["<b>Types</b> — virus (needs a host file), worm (self-spreads), trojan (disguised), ransomware (encrypts for payment), rootkit (hides deep), fileless (lives in memory).",
+   "<b>APT</b> — advanced persistent threat: a stealthy, long-term, usually state-backed intruder.",
+   "<b>Static vs dynamic analysis</b> — reading the code vs running it in a sandbox to watch behavior.",
+   "<b>Sandbox</b> — an isolated VM to detonate samples safely.",
+   "Defenses — EDR, app whitelisting, patching, user training."],
+  tools:["Cuckoo Sandbox","Process Monitor","PEiD","VirusTotal"],
+  lab:"<b>iLabs – Malware.</b> Build a test trojan with <span class='mono'>msfvenom</span> in your isolated lab; observe it with <span class='mono'>Process Monitor</span>. Never run real malware outside an isolated VM.",
+  tips:"Be able to classify a sample from its description (self-replicating? disguised? in memory?)."},
+
+ {n:8,p:1,wk:"Wk 6",t:"Sniffing",s:"Capture and read network traffic.",
+  lead:"Intercepting packets to read credentials and data, especially on anything unencrypted.",
+  concepts:["<b>Passive vs active</b> — passive on a hub/mirror port; active when you must force traffic to you on a switch.",
+   "<b>ARP poisoning</b> — forge ARP replies so victim traffic flows through you (man-in-the-middle).",
+   "<b>MAC flooding</b> — overflow a switch's table so it broadcasts like a hub.",
+   "<b>DHCP starvation</b> and <b>DNS spoofing</b> round out the active techniques.",
+   "Defenses — encryption (HTTPS/SSH), dynamic ARP inspection, port security."],
+  tools:["Wireshark","tcpdump","Ettercap","Bettercap"],
+  lab:"<b>iLabs – Sniffing.</b> Capture a plaintext login with <span class='mono'>Wireshark</span>; run an ARP-poison MITM with <span class='mono'>Ettercap</span> between two lab VMs.",
+  tips:"Reading a Wireshark capture and spotting ARP poisoning are common question types."},
+
+ {n:9,p:1,wk:"Wk 6",t:"Social Engineering",s:"Hacking the human, not the machine.",
+  lead:"People are the easiest way in. This module covers the manipulation techniques and how to defend against them.",
+  concepts:["<b>Phishing / spear phishing / whaling</b> — fake messages, targeted at anyone, a specific person, or an executive.",
+   "<b>In-person</b> — pretexting (a fake story), baiting (a dropped USB), tailgating (following through a door).",
+   "<b>Vishing / smishing</b> — the same over phone and SMS.",
+   "<b>Insider threats</b> — the malicious or careless employee.",
+   "Defense is almost entirely <b>awareness training</b> and verification habits."],
+  tools:["SET (Social-Engineer Toolkit)","GoPhish"],
+  lab:"<b>iLabs – Social Engineering.</b> Clone a login page with <span class='mono'>SET</span> in your lab to see how a credential-harvest works. Only ever against yourself.",
+  tips:"Match each scenario to its named technique — easy points if you know the vocabulary."},
+
+ {n:10,p:1,wk:"Wk 7",t:"Denial-of-Service",s:"Overwhelm a service until it drops.",
+  lead:"Making a system unavailable by exhausting its resources — and how to absorb such attacks.",
+  concepts:["<b>DoS vs DDoS</b> — one source vs many (a botnet of compromised hosts).",
+   "<b>Volumetric</b> — flood bandwidth (UDP/ICMP floods, amplification).",
+   "<b>Protocol</b> — abuse the stack (SYN flood leaves half-open connections).",
+   "<b>Application-layer</b> — slow, cheap attacks like Slowloris that tie up a web server.",
+   "Mitigation — rate limiting, anti-DDoS services, blackholing, over-provisioning."],
+  tools:["LOIC","hping3","Slowloris"],
+  lab:"<b>iLabs – DoS.</b> Launch a <span class='mono'>SYN flood</span> with <span class='mono'>hping3</span> at a lab VM and watch its connection table fill. Lab-only — never the internet.",
+  tips:"Classify an attack as volumetric / protocol / app-layer from its description."},
+
+ {n:11,p:1,wk:"Wk 7",t:"Session Hijacking",s:"Steal a logged-in session.",
+  lead:"Rather than crack a password, you ride a victim's already-authenticated session.",
+  concepts:["<b>Session token</b> — the cookie/ID that proves you're logged in; steal it and you're them.",
+   "<b>Network-level</b> — predict/steal TCP sequence or hijack the connection.",
+   "<b>App-level</b> — token theft via XSS, session fixation, sniffing an unencrypted cookie.",
+   "<b>Man-in-the-middle</b> ties sniffing and hijacking together.",
+   "Defenses — HTTPS everywhere, random tokens, regenerate on login, HttpOnly/Secure cookies, timeouts."],
+  tools:["Burp Suite","Wireshark","Ettercap"],
+  lab:"<b>iLabs – Session Hijacking.</b> Capture a session cookie over HTTP with <span class='mono'>Burp</span>/<span class='mono'>Wireshark</span> and replay it to take over the session in your lab app.",
+  tips:"Know the fixes (HTTPS, token regeneration) — questions often ask for the best defense."},
+
+ {n:12,p:2,wk:"Wk 8",t:"Evading IDS, Firewalls & Honeypots",s:"Understand the defenses, then slip past them.",
+  lead:"How perimeter defenses detect you, and the tricks attackers use to avoid tripping them.",
+  concepts:["<b>IDS/IPS</b> — detect (IDS) vs detect-and-block (IPS); signature vs anomaly based.",
+   "<b>Firewalls</b> — packet filter, stateful, application/proxy; rules by port/IP/protocol.",
+   "<b>Evasion</b> — packet fragmentation, encoding/obfuscation, tunneling over allowed ports (e.g. 443/DNS), slow scans.",
+   "<b>Honeypot</b> — a decoy system planted to catch and study attackers.",
+   "Defense-in-depth beats any single control."],
+  tools:["Nmap (evasion flags)","Snort","Scapy"],
+  lab:"<b>iLabs – Evasion.</b> Try Nmap evasion: <span class='mono'>-f</span> (fragment), <span class='mono'>-D</span> (decoys), <span class='mono'>--data-length</span>, and a slow <span class='mono'>-T1</span> scan against a Snort-monitored host.",
+  tips:"Remember which Nmap flags are for evasion and how IDS signature vs anomaly detection differ."},
+
+ {n:13,p:2,wk:"Wk 8",t:"Hacking Web Servers",s:"Attack the server software itself.",
+  lead:"Targeting the web server (Apache/IIS/Nginx) and its configuration, separate from the app it hosts.",
+  concepts:["<b>Common flaws</b> — unpatched versions, default/weak configs, directory listing, exposed admin panels.",
+   "<b>Directory traversal</b> — <span class='mono'>../../</span> to read files outside the web root.",
+   "<b>Methodology</b> — footprint the server, find its version, match known exploits, attack, report.",
+   "<b>Patch & config management</b> is the primary defense.",
+   "Server hardening — disable unused modules, hide version banners, least privilege."],
+  tools:["Nikto","Nmap","Metasploit"],
+  lab:"<b>iLabs – Web Servers.</b> Fingerprint and scan Metasploitable's web server with <span class='mono'>Nikto</span>; identify its version and find a matching exploit.",
+  tips:"Keep server attacks (this module) separate from web-app attacks (next) in your head."},
+
+ {n:14,p:2,wk:"Wk 9",t:"Hacking Web Applications",s:"Attack the app logic and inputs.",
+  lead:"The app running on the server: its inputs, authentication, sessions and logic. This is where most real-world bugs live.",
+  concepts:["<b>Web app hacking methodology</b> — map the app, find entry points, test each input.",
+   "<b>OWASP Top 10</b> — injection, broken auth, XSS, broken access control, misconfig, and more.",
+   "<b>XSS</b> — inject script that runs in other users' browsers (stored / reflected / DOM).",
+   "<b>CSRF</b> — trick a logged-in user's browser into making a request.",
+   "<b>Broken access control</b> — reaching data/actions you shouldn't (IDOR)."],
+  tools:["Burp Suite","OWASP ZAP","Nikto"],
+  lab:"<b>iLabs / Juice Shop.</b> Proxy a target through <span class='mono'>Burp</span> or <span class='mono'>ZAP</span>; find a stored XSS and an access-control (IDOR) bug in OWASP Juice Shop.",
+  tips:"Learn the OWASP Top 10 by name and example — heavily represented on the exam."},
+
+ {n:15,p:2,wk:"Wk 9",t:"SQL Injection",s:"Make the database do what you say.",
+  lead:"Smuggling SQL through an input field so the app runs your query — read data, bypass login, sometimes own the server.",
+  concepts:["<b>How it happens</b> — user input is concatenated straight into a SQL query.",
+   "<b>Types</b> — in-band (union/error-based), blind (boolean/time-based), out-of-band.",
+   "<b>Auth bypass</b> — the classic <span class='mono'>' OR '1'='1</span> making a WHERE clause always true.",
+   "<b>Impact</b> — dump tables, read/write files, even command execution in some setups.",
+   "<b>Fix</b> — parameterized queries / prepared statements, input validation, least-privilege DB user."],
+  tools:["sqlmap","Burp Suite"],
+  lab:"<b>iLabs – SQLi.</b> Find an injectable parameter in Metasploitable's DVWA/Mutillidae; automate extraction with <span class='mono'>sqlmap -u &lt;url&gt; --dbs</span>; then test a parameterized-query fix.",
+  tips:"Know the injection types and that prepared statements are THE fix. Expect multiple SQLi questions."},
+
+ {n:16,p:2,wk:"Wk 10",t:"Hacking Wireless Networks",s:"Attack Wi-Fi encryption and clients.",
+  lead:"Breaking into wireless networks by attacking weak encryption and the connection handshake.",
+  concepts:["<b>Encryption ladder</b> — WEP (broken), WPA/WPA2 (handshake-crackable with weak passwords), WPA3 (strongest).",
+   "<b>WPA2 crack</b> — capture the 4-way handshake, then offline dictionary/brute-force it.",
+   "<b>Evil twin</b> — a rogue access point mimicking a real SSID to harvest connections.",
+   "<b>Deauth attack</b> — knock clients off so they reconnect and reveal a handshake.",
+   "Defense — strong passphrase, WPA3, 802.1X enterprise auth, rogue-AP detection."],
+  tools:["Aircrack-ng","airodump-ng","Wifite","Kismet"],
+  lab:"<b>iLabs – Wireless.</b> With a supported adapter: <span class='mono'>airodump-ng</span> to capture a WPA2 handshake on YOUR OWN AP, then <span class='mono'>aircrack-ng</span> against a wordlist.",
+  tips:"Memorize the encryption order WEP→WPA→WPA2→WPA3 and the capture-then-crack workflow."},
+
+ {n:17,p:3,wk:"Wk 11",t:"Hacking Mobile Platforms",s:"Android & iOS attack surface.",
+  lead:"Mobile-specific risks and how enterprises try to contain them.",
+  concepts:["<b>Android vs iOS</b> — open sideloading & fragmentation vs a tighter walled garden.",
+   "<b>Rooting / jailbreaking</b> removes built-in protections and widens the attack surface.",
+   "<b>OWASP Mobile Top 10</b> — insecure storage, weak crypto, insecure comms, etc.",
+   "<b>Mobile malware</b> — trojanized apps, fake stores, malicious profiles.",
+   "<b>MDM</b> — Mobile Device Management to enforce policy and remote-wipe."],
+  tools:["MobSF","adb","Drozer","Frida"],
+  lab:"<b>iLabs – Mobile.</b> Analyze an APK with <span class='mono'>MobSF</span> (static scan); explore an emulator with <span class='mono'>adb</span> to see app data storage.",
+  tips:"Know the OWASP Mobile risks and what rooting/jailbreaking changes about security."},
+
+ {n:18,p:3,wk:"Wk 11",t:"IoT & OT Hacking",s:"Smart devices and industrial systems.",
+  lead:"Billions of under-secured devices, plus the operational-tech that runs physical infrastructure.",
+  concepts:["<b>Why IoT is weak</b> — default creds, no updates, exposed services, tiny/no security budget.",
+   "<b>IoT protocols</b> — MQTT, CoAP, Zigbee, BLE.",
+   "<b>OT / ICS / SCADA</b> — systems controlling factories, power, water; availability-first, often legacy.",
+   "<b>Shodan</b> — the search engine for internet-exposed devices and control systems.",
+   "Defense — change defaults, segment networks, patch, monitor."],
+  tools:["Shodan","Firmware tools","Wireshark"],
+  lab:"<b>iLabs / Shodan.</b> Search <span class='mono'>Shodan</span> for a device type and default-cred banners; review an IoT firmware image's structure (lab/sample only).",
+  tips:"Remember OT prioritizes availability/safety, and that defaults + no patching are the core IoT problem."},
+
+ {n:19,p:3,wk:"Wk 11",t:"Cloud Computing",s:"Attacking and securing the cloud.",
+  lead:"How cloud changes the attack surface, and the misconfigurations that cause most breaches.",
+  concepts:["<b>Service models</b> — IaaS / PaaS / SaaS; each shifts how much you secure vs the provider.",
+   "<b>Shared responsibility</b> — the provider secures the cloud; YOU secure what you put in it.",
+   "<b>#1 cause of breaches</b> — misconfiguration (public S3 buckets, open security groups, leaked keys).",
+   "<b>Containers & serverless</b> — Docker/Kubernetes and function risks.",
+   "Defense — least-privilege IAM, encryption, config scanning, logging (CloudTrail)."],
+  tools:["ScoutSuite","Prowler","Pacu (AWS)"],
+  lab:"<b>iLabs – Cloud.</b> Audit a test cloud account with <span class='mono'>ScoutSuite</span>/<span class='mono'>Prowler</span>; find a public bucket or over-permissive IAM role and fix it.",
+  tips:"Shared-responsibility and 'misconfiguration is the top risk' are near-guaranteed questions."},
+
+ {n:20,p:3,wk:"Wk 12",t:"Cryptography",s:"The math that protects data — and how it fails.",
+  lead:"How encryption, hashing and PKI keep data safe, plus the attacks that target weak crypto.",
+  concepts:["<b>Symmetric</b> (AES, DES) — one shared key, fast, for bulk data. <b>Asymmetric</b> (RSA, ECC) — public/private key pair, for key exchange & signatures.",
+   "<b>Hashing</b> (SHA-256, MD5) — one-way fingerprint for integrity; MD5/SHA-1 are broken.",
+   "<b>PKI & certificates</b> — CAs vouch for public keys; powers HTTPS/TLS.",
+   "<b>Digital signatures</b> — sign with private key, verify with public key: proves integrity + origin.",
+   "<b>Attacks</b> — brute force, birthday (hash collisions), and the human-error attacks."],
+  tools:["OpenSSL","HashCalc","VeraCrypt","CrypTool"],
+  lab:"<b>iLabs – Cryptography.</b> Use <span class='mono'>OpenSSL</span> to hash a file, encrypt with AES, and generate an RSA keypair; verify a hash to prove integrity.",
+  tips:"Symmetric vs asymmetric (and which is used WHERE) is one of the most common exam questions."},
+];
+
+// Free, legal practice labs mapped to each module (external — open in a new tab).
+const LINKS={
+ 1:[{t:"TryHackMe: Pentesting Fundamentals",u:"https://tryhackme.com/room/pentestingfundamentals"},{t:"TryHackMe: Intro Path",u:"https://tryhackme.com/path/outline/introtocyber"}],
+ 2:[{t:"TryHackMe: Passive Recon",u:"https://tryhackme.com/room/passiverecon"},{t:"OSINT Framework",u:"https://osintframework.com/"}],
+ 3:[{t:"TryHackMe: Nmap",u:"https://tryhackme.com/room/furthernmap"},{t:"Nmap Reference Guide",u:"https://nmap.org/book/man.html"}],
+ 4:[{t:"TryHackMe: Enumeration",u:"https://tryhackme.com/room/enumerationpe"},{t:"HackTheBox Academy",u:"https://academy.hackthebox.com/"}],
+ 5:[{t:"TryHackMe: Vulnerabilities 101",u:"https://tryhackme.com/room/vulnerabilities101"},{t:"NIST CVSS Calculator",u:"https://nvd.nist.gov/vuln-metrics/cvss"}],
+ 6:[{t:"TryHackMe: Metasploit",u:"https://tryhackme.com/room/metasploitintro"},{t:"TryHackMe: Password Attacks",u:"https://tryhackme.com/room/passwordattacks"}],
+ 7:[{t:"TryHackMe: Intro to Malware Analysis",u:"https://tryhackme.com/room/intromalwareanalysis"},{t:"MalwareBazaar (samples)",u:"https://bazaar.abuse.ch/"}],
+ 8:[{t:"TryHackMe: Wireshark Basics",u:"https://tryhackme.com/room/wiresharkthebasics"},{t:"Sample Captures (Wireshark)",u:"https://wiki.wireshark.org/SampleCaptures"}],
+ 9:[{t:"TryHackMe: Phishing",u:"https://tryhackme.com/room/phishingyl"},{t:"Google Phishing Quiz",u:"https://phishingquiz.withgoogle.com/"}],
+ 10:[{t:"TryHackMe: Network Security",u:"https://tryhackme.com/room/networksecurityprotocols"},{t:"Cloudflare: What is a DDoS",u:"https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/"}],
+ 11:[{t:"PortSwigger: Access control & sessions",u:"https://portswigger.net/web-security/access-control"},{t:"OWASP Session Management",u:"https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"}],
+ 12:[{t:"TryHackMe: Firewalls",u:"https://tryhackme.com/room/redteamfirewalls"},{t:"Nmap: Firewall/IDS Evasion",u:"https://nmap.org/book/man-bypass-firewalls-ids.html"}],
+ 13:[{t:"TryHackMe: Web Server Attacks",u:"https://tryhackme.com/room/owasptop10"},{t:"OWASP WSTG",u:"https://owasp.org/www-project-web-security-testing-guide/"}],
+ 14:[{t:"PortSwigger Web Security Academy (free)",u:"https://portswigger.net/web-security"},{t:"OWASP Juice Shop",u:"https://owasp.org/www-project-juice-shop/"}],
+ 15:[{t:"PortSwigger: SQL Injection labs",u:"https://portswigger.net/web-security/sql-injection"},{t:"OWASP SQLi Prevention",u:"https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"}],
+ 16:[{t:"TryHackMe: Wi-Fi Hacking",u:"https://tryhackme.com/room/wifihacking101"},{t:"Aircrack-ng Docs",u:"https://www.aircrack-ng.org/documentation.html"}],
+ 17:[{t:"OWASP Mobile Testing Guide",u:"https://mas.owasp.org/MASTG/"},{t:"TryHackMe: Android Hacking",u:"https://tryhackme.com/room/androidhacking101"}],
+ 18:[{t:"TryHackMe: Intro to IoT",u:"https://tryhackme.com/room/iotintro"},{t:"Shodan",u:"https://www.shodan.io/"}],
+ 19:[{t:"flaws.cloud (free AWS CTF)",u:"http://flaws.cloud/"},{t:"TryHackMe: Cloud Fundamentals",u:"https://tryhackme.com/module/cloud-fundamentals"}],
+ 20:[{t:"CryptoHack (free)",u:"https://cryptohack.org/"},{t:"TryHackMe: Cryptography Basics",u:"https://tryhackme.com/room/cryptographybasics"}],
+};
+// Plain-terms analogies — original, to make each concept click fast.
+const SIMPLE={
+ 1:"Think of a licensed locksmith. Same skills as a burglar, but you were hired, you have written permission, and you follow the same fixed checklist every single time.",
+ 2:"Like a detective studying someone from the outside — their post, their social media, their bins — learning everything before ever knocking on the door. The target never notices.",
+ 3:"Now you walk around the building trying every door and window to see which open, and what's behind each one. You're drawing a map of the ways in.",
+ 4:"You don't just notice a door is open — you lean in and read the name tags, the guest list and the room labels. You collect usable details: usernames, shares, groups.",
+ 5:"A home inspector walks the building and hands you a ranked list of weaknesses — 'back lock broken (critical), window latch loose (medium)' — so you deal with the worst first.",
+ 6:"The actual break-in: pick the lock (crack the password), find the master key (privilege escalation), do what you came to do, hide your tools, then wipe your fingerprints.",
+ 7:"The different kinds of bad software: some need a host file to live on (virus), some roam on their own (worm), some wear a disguise (trojan), some hold your files for ransom. Analysts study them in a sealed room (a sandbox).",
+ 8:"Like quietly listening to every conversation in an office. If people speak in the open (no encryption), you hear their passwords. ARP poisoning is tricking the mailroom into routing everyone's post through your desk first.",
+ 9:"Hacking the person, not the computer. Instead of picking the lock, you phone the receptionist pretending to be IT and ask them to open the door for you.",
+ 10:"Jamming a shop's only phone line by calling non-stop so real customers can't get through. A DDoS is thousands of callers doing it at once from a botnet.",
+ 11:"Instead of stealing someone's password, you steal their 'logged-in wristband' (the session token) and walk straight in as them.",
+ 12:"The building has cameras (IDS) and guards (firewall). Evasion is the tricks to move without tripping alarms — disguises, going slow, using hallways that are allowed. A honeypot is a fake office left open on purpose to catch snoops.",
+ 13:"Attacking the building itself — the web-server software and its foundations — like finding an unlocked maintenance door, separate from the shops trading inside it.",
+ 14:"Attacking the shops inside the building — the application's own forms, logins and logic. This is where most real-world bugs actually live.",
+ 15:"Slipping a secret instruction into a form field so the database obeys you — like scribbling extra orders onto a restaurant ticket that the kitchen makes without question.",
+ 16:"Breaking into the building's Wi-Fi. You capture the 'secret handshake' when a device connects, then guess the password offline. An evil twin is a fake Wi-Fi named exactly like the real one.",
+ 17:"The phone-specific risks: rooting/jailbreaking rips out the safety rails, dodgy apps leak your data, and companies use MDM as a remote leash to lock or wipe a lost device.",
+ 18:"The cheap smart gadgets — and the serious machines that run factories and power grids — that often ship with default passwords and never get updated. Easy doors left open.",
+ 19:"Renting a unit in someone else's giant building. The landlord secures the building; you must still lock your own unit. Most cloud breaches are simply people leaving their unit door wide open (misconfiguration).",
+ 20:"The locks and seals themselves. Symmetric = one shared key, fast, for bulk data. Asymmetric = a public padlock anyone can click shut, but only your private key opens it. Hashing = a tamper-evident seal that proves nothing was changed.",
+};
+const $=s=>document.querySelector(s);
+let state={};
+try{state=JSON.parse(localStorage.getItem("ceh-progress-v1"))||{}}catch(e){state={}}
+const save=()=>{try{localStorage.setItem("ceh-progress-v1",JSON.stringify(state))}catch(e){}};
+
+// roadmap
+$("#road").innerHTML=PHASES.map((ph,i)=>{
+  const mods=M.filter(m=>m.p===i);
+  return `<div class="ph ${i===3?'exam':''}">
+    <div class="wk mono">${ph.wks}</div><h3>${ph.name}</h3>
+    <div class="mods">${mods.map(m=>`<span><span class="d">M${String(m.n).padStart(2,'0')}</span>${m.t}</span>`).join("")}</div>
+  </div>`;
+}).join("");
+
+// modules
+const CHECK=`<svg viewBox="0 0 24 24" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+let html="";
+PHASES.forEach((ph,i)=>{
+  html+=`<div class="phase-band"><span class="tag">${ph.tag}</span><h3>${ph.name}</h3><span class="wks mono">${ph.wks}</span></div>`;
+  M.filter(m=>m.p===i).forEach(m=>{
+    const kT="m"+m.n+"_theory", kL="m"+m.n+"_lab";
+    html+=`<details class="mod" id="mod${m.n}">
+      <summary>
+        <span class="idx mono">M${String(m.n).padStart(2,'0')}</span>
+        <span class="ti"><span class="mt">${m.t}</span><span class="ms">${m.wk} · ${m.s}</span></span>
+        <span class="state"><span class="pip" data-pip="${kT}"></span><span class="pip" data-pip="${kL}"></span></span>
+        <span class="caret"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+      </summary>
+      <div class="body">
+        <p class="lead">${m.lead}</p>
+        ${SIMPLE[m.n]?`<div class="plain"><b>In plain terms</b>${SIMPLE[m.n]}</div>`:""}
+        <h4>Key concepts</h4>
+        <ul>${m.concepts.map(c=>`<li>${c}</li>`).join("")}</ul>
+        <h4>Tools to know</h4>
+        <div class="tools">${m.tools.map(t=>`<span>${t}</span>`).join("")}</div>
+        <h4>Lab to run</h4>
+        <div class="lab">${m.lab}</div>
+        ${LINKS[m.n]?`<h4>Free practice labs</h4><div class="labs-ext">${LINKS[m.n].map(l=>`<a href="${l.u}" target="_blank" rel="noopener">${l.t} ↗</a>`).join("")}</div>`:""}
+        <h4>Exam focus</h4>
+        <ul><li>${m.tips}</li></ul>
+        <div class="toggles">
+          <label class="tg" data-k="${kT}"><input type="checkbox"><span class="box">${CHECK}</span>Notes / video done</label>
+          <label class="tg" data-k="${kL}"><input type="checkbox"><span class="box">${CHECK}</span>Lab done</label>
+        </div>
+      </div>
+    </details>`;
+  });
+});
+$("#modules").innerHTML=html;
+
+function refresh(){
+  const keys=M.flatMap(m=>["m"+m.n+"_theory","m"+m.n+"_lab"]);
+  const done=keys.filter(k=>state[k]).length;
+  const pctv=Math.round(done/keys.length*100);
+  $("#pfill").style.width=pctv+"%";
+  $("#pct").textContent=pctv+"%";
+  $("#cnt").textContent=done+" / "+keys.length;
+  document.querySelectorAll("[data-pip]").forEach(p=>p.classList.toggle("on",!!state[p.dataset.pip]));
+  document.querySelectorAll(".tg").forEach(t=>{
+    const on=!!state[t.dataset.k];
+    t.classList.toggle("on",on);
+    t.querySelector("input").checked=on;
+  });
+}
+document.querySelectorAll(".tg").forEach(t=>{
+  t.addEventListener("click",e=>{
+    e.preventDefault();
+    const k=t.dataset.k;
+    state[k]=!state[k]; save(); refresh();
+  });
+});
+refresh();
+
+// quiz (original scenario questions; a=index of correct option)
+const QUIZ=[
+ {q:"A tester wants to find open ports without completing the TCP handshake, to stay quieter in logs. Which Nmap scan?",o:["-sT (full connect)","-sS (SYN / half-open)","-sU (UDP)","-sn (ping sweep)"],a:1,w:"A SYN scan never sends the final ACK, so the connection is never fully established or logged by many apps."},
+ {q:"You captured a WPA2 four-way handshake. What is the next step to recover the passphrase?",o:["Replay the handshake to the AP","Offline dictionary attack with aircrack-ng","Launch an evil-twin AP","Send more deauth frames"],a:1,w:"WPA2 can't be cracked live — you take the captured handshake offline and brute-force/dictionary it."},
+ {q:"Entering ' OR '1'='1' -- - in a login field logs you in as the first user. This is an example of:",o:["Cross-site scripting","SQL injection (auth bypass)","Session fixation","Command injection"],a:1,w:"The input breaks out of the SQL query and makes the WHERE clause always true. Fix: parameterized queries."},
+ {q:"An attacker sends forged ARP replies so a victim's traffic flows through their machine. This attack is:",o:["MAC flooding","DNS poisoning","ARP poisoning (MITM)","DHCP starvation"],a:2,w:"Forged ARP replies map the gateway's IP to the attacker's MAC, placing them in the middle of the traffic."},
+ {q:"Which tool is used for ONLINE brute-forcing of a live network service like SSH or RDP?",o:["John the Ripper","Hashcat","Hydra","Mimikatz"],a:2,w:"Hydra attacks live services. John and Hashcat crack captured hashes offline."},
+ {q:"A piece of malware spreads across the network by itself, with no host file and no user action. It is a:",o:["Virus","Worm","Trojan","Rootkit"],a:1,w:"Self-replicating + no host/user action = worm. A virus needs a host file; a trojan needs to be run."},
+ {q:"A vulnerability scores 9.4 on CVSS v3. Which severity band is that?",o:["Low","Medium","High","Critical"],a:3,w:"CVSS v3: 0.1–3.9 Low, 4.0–6.9 Medium, 7.0–8.9 High, 9.0–10.0 Critical."},
+ {q:"Slowloris keeps many connections open with partial requests, using very little bandwidth. This is a:",o:["Volumetric DoS","Protocol DoS","Application-layer DoS","Reflection DoS"],a:2,w:"It exhausts the web server's connection pool at the application layer, not the bandwidth."},
+ {q:"Which single defense most directly prevents SQL injection?",o:["A web application firewall","Parameterized queries / prepared statements","HTTPS everywhere","Input length limits"],a:1,w:"Prepared statements separate code from data so input can never be executed as SQL. The others only reduce risk."},
+ {q:"After Scanning, which phase comes next in the classic five-phase model?",o:["Reconnaissance","Gaining Access","Maintaining Access","Clearing Tracks"],a:1,w:"Order: Recon → Scanning → Gaining Access → Maintaining Access → Clearing Tracks."},
+ {q:"A rogue access point broadcasts the same SSID as a legitimate network to lure clients. This is a(n):",o:["Deauth attack","Evil twin","Karma cache","WPS attack"],a:1,w:"An evil twin impersonates a trusted SSID so victims connect to the attacker instead."},
+ {q:"For encrypting large amounts of data quickly, which type of cryptography is used?",o:["Asymmetric (RSA)","Symmetric (AES)","Hashing (SHA-256)","Digital signatures"],a:1,w:"Symmetric ciphers like AES are fast for bulk data. Asymmetric is slower and used mainly for key exchange and signatures."},
+ {q:"Which Nmap flag tells it to skip host discovery and scan a host even if it appears down?",o:["-sV","-Pn","-A","-O"],a:1,w:"-Pn disables the ping check, useful when a firewall blocks ICMP but the host is actually up."},
+ {q:"A decoy system is deployed specifically to attract and study attackers. It is called a:",o:["Honeypot","Bastion host","DMZ","IDS sensor"],a:0,w:"A honeypot is an intentional trap with no real production value, so any interaction with it is suspicious."},
+ {q:"A default SNMP community string that frequently exposes device information is:",o:["admin","root","public","guest"],a:2,w:"'public' (read) and 'private' (write) are the classic SNMP defaults that leak large amounts of data."},
+];
+const quizEl=document.getElementById("quiz");
+if(quizEl){
+  quizEl.innerHTML=QUIZ.map((q,i)=>`<div class="q"><div class="qn">Q${i+1} / ${QUIZ.length}</div><p>${q.q}</p>
+    <div class="opts">${q.o.map((o,j)=>`<button class="opt" data-q="${i}" data-o="${j}">${o}</button>`).join("")}</div>
+    <div class="why" id="why${i}"><b>Answer:</b> ${q.o[q.a]} — ${q.w}</div></div>`).join("");
+  quizEl.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
+    const qi=+b.dataset.q, oi=+b.dataset.o, correct=QUIZ[qi].a;
+    const card=b.closest(".q");
+    card.querySelectorAll(".opt").forEach((btn,j)=>{btn.disabled=true; if(j===correct)btn.classList.add("correct");});
+    if(oi!==correct)b.classList.add("wrong");
+    document.getElementById("why"+qi).classList.add("show");
+  }));
+}
+
+// theme toggle
+const root=document.documentElement;
+try{const sv=localStorage.getItem("ceh-theme"); if(sv)root.setAttribute("data-theme",sv);}catch(e){}
+$("#theme").addEventListener("click",()=>{
+  const cur=root.getAttribute("data-theme");
+  const dark=cur?cur==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  const next=dark?"light":"dark";
+  root.setAttribute("data-theme",next);
+  try{localStorage.setItem("ceh-theme",next)}catch(e){}
+});
+
+// toast + reset
+const toast=$("#toast");let tt;
+function say(m){toast.textContent=m;toast.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove("show"),1800);}
+$("#reset").addEventListener("click",()=>{
+  state={};save();refresh();say("Progress reset");
+});
+</script>
